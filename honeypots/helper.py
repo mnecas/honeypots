@@ -11,6 +11,8 @@
 '''
 
 import sys
+import os
+import requests
 
 from psutil import process_iter
 from signal import SIGTERM
@@ -32,6 +34,9 @@ from urllib.parse import urlparse
 from sqlite3 import connect as sqlite3_connect
 from pathlib import Path
 from contextlib import suppress
+import logging
+import json
+from .CustomHttpHandler import CustomHttpHandler
 
 old_stderr = sys.stderr
 sys.stderr = open(devnull, 'w')
@@ -149,6 +154,25 @@ def setup_logger(name, temp_name, config, drop=False):
     file_handler = None
     ret_logs_obj = getLogger(temp_name)
     ret_logs_obj.setLevel(DEBUG)
+
+    url = os.getenv('SERVER')
+    honeypot_id = os.getenv('ID')
+    httpHandler = CustomHttpHandler(
+        token=os.getenv('TOKEN'),
+        url=f"http://{url}/api/{honeypot_id}/logs",
+        silent=False
+    )
+    formatter = logging.Formatter(json.dumps({
+        'time': '%(asctime)s',
+        'pathname': '%(pathname)s',
+        'line': '%(lineno)d',
+        'logLevel': '%(levelname)s',
+        'message': '%(message)s'
+    }))
+    httpHandler.setLevel(DEBUG)
+    httpHandler.setFormatter(formatter)
+    ret_logs_obj.addHandler(httpHandler)
+
     if 'db_postgres' in logs or 'db_sqlite' in logs:
         ret_logs_obj.addHandler(CustomHandler(temp_name, logs, custom_filter, config_data, drop))
     elif 'terminal' in logs:
