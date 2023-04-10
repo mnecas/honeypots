@@ -154,24 +154,21 @@ def setup_logger(name, temp_name, config, drop=False):
     file_handler = None
     ret_logs_obj = getLogger(temp_name)
     ret_logs_obj.setLevel(DEBUG)
-
     url = os.getenv('SERVER')
     honeypot_id = os.getenv('ID')
-    httpHandler = CustomHttpHandler(
-        token=os.getenv('TOKEN'),
-        url=f"http://{url}/api/{honeypot_id}/logs",
-        silent=False
-    )
-    formatter = logging.Formatter(json.dumps({
-        'time': '%(asctime)s',
-        'pathname': '%(pathname)s',
-        'line': '%(lineno)d',
-        'logLevel': '%(levelname)s',
-        'message': '%(message)s'
-    }))
-    httpHandler.setLevel(DEBUG)
-    httpHandler.setFormatter(formatter)
-    ret_logs_obj.addHandler(httpHandler)
+    if url and honeypot_id:
+        httpHandler = CustomHttpHandler(
+            token=os.getenv('TOKEN'),
+            url=f"http://{url}/api/{honeypot_id}/logs",
+            silent=False
+        )
+        formatter = logging.Formatter(json.dumps({
+            'time': '%(asctime)s',
+            'message': '%(message)s'
+        }))
+        httpHandler.setLevel(DEBUG)
+        httpHandler.setFormatter(formatter)
+        ret_logs_obj.addHandler(httpHandler)
 
     if 'db_postgres' in logs or 'db_sqlite' in logs:
         ret_logs_obj.addHandler(CustomHandler(temp_name, logs, custom_filter, config_data, drop))
