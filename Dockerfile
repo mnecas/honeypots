@@ -12,4 +12,4 @@ RUN pip3 install .
 #ENTRYPOINT ["/usr/local/bin/honeypots", "--setup", "http:80"]
 ENTRYPOINT ["/usr/local/bin/honeypots"]
 #CMD "/usr/local/bin/honeypots --setup http:80"
-CMD ["--setup", "http:8080", "--termination-strategy", "signal"]
+CMD ["--setup", "http:80", "--termination-strategy", "signal"]
